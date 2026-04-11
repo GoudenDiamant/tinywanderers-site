@@ -60,7 +60,8 @@ if (!code) {
   fetch(url)
     .then(res => res.text())
     .then(data => {
-      const json = JSON.parse(data.substring(47).slice(0, -2));
+      const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
+      const json = JSON.parse(jsonString);
       const rows = json.table.rows;
 
       const entries = rows.filter(r => r.c[0]?.v === code);
