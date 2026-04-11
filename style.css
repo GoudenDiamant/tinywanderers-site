@@ -21,3 +21,36 @@ nav li a {
 nav li a:hover {
     background-color: #111; /* Kleur bij 'hover' */
 }
+body {
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+.stat {
+  font-size: 18px;
+  margin: 5px 0;
+}
+
+.message {
+  font-style: italic;
+  color: #555;
+}
