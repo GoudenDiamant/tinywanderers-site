@@ -1,16 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tiny Wanderer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      background: #f7f7f7;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .stat {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+
+    .message {
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌍 Tiny Wanderer</h1>
+
+<div id="content">
+  <p>Laden...</p>
+</div>
+
 <script>
+const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
+const url = `https://docs.google.com/spreadsheets/d/${1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw}/gviz/tq?tqx=out:json`;
+
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
-fetch("https://docs.google.com/spreadsheets/d/1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw/edit?usp=sharing")
-  .then(res => res.text())
-  .then(data => {
-    const json = JSON.parse(data.substring(47).slice(0, -2));
-    const rows = json.table.rows;
+const content = document.getElementById("content");
 
-    const filtered = rows.filter(r => r.c[0]?.v === code);
+if (!code) {
+  content.innerHTML = "<p>Geen code opgegeven.</p>";
+} else {
 
-    document.body.innerHTML += "<h2>Code: " + code + "</h2>";
-    document.body.innerHTML += "<p>Aantal keer gevonden: " + filtered.length + "</p>";
-  });
+  fetch(url)
+    .then(res => res.text())
+    .then(data => {
+      const json = JSON.parse(data.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      const entries = rows.filter(r => r.c[0]?.v === code);
+
+      if (entries.length === 0) {
+        content.innerHTML = "<p>❌ Deze code bestaat nog niet of is nog niet geregistreerd.</p>";
+        return;
+      }
+
+      // Stats
+      const total = entries.length;
+      const firstDate = entries[0].c[2]?.v;
+      const lastDate = entries[entries.length - 1].c[2]?.v;
+
+      let html = `
+        <div class="card">
+          <h2>Code: ${code}</h2>
+          <div class="stat">🔁 Aantal vondsten: ${total}</div>
+          <div class="stat">📅 Eerste vondst: ${firstDate || "Onbekend"}</div>
+          <div class="stat">📅 Laatste vondst: ${lastDate || "Onbekend"}</div>
+        </div>
+      `;
+
+      html += `<div class="card"><h3>📍 Reisgeschiedenis</h3>`;
+
+      entries.forEach(entry => {
+        const location = entry.c[1]?.v || "Onbekend";
+        const date = entry.c[2]?.v || "Onbekend";
+        const message = entry.c[3]?.v || "";
+
+        html += `
+          <div class="card">
+            <div><strong>📍 ${location}</strong></div>
+            <div>📅 ${date}</div>
+            ${message ? `<div class="message">💬 ${message}</div>` : ""}
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+
+      content.innerHTML = html;
+    })
+    .catch(err => {
+      content.innerHTML = "<p>⚠️ Fout bij laden van data.</p>";
+      console.error(err);
+    });
+}
 </script>
+
+</body>
+</html>
