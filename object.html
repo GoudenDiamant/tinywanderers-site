@@ -1,0 +1,16 @@
+<script>
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+
+fetch("https://docs.google.com/spreadsheets/d/1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw/edit?usp=sharing")
+  .then(res => res.text())
+  .then(data => {
+    const json = JSON.parse(data.substring(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    const filtered = rows.filter(r => r.c[0]?.v === code);
+
+    document.body.innerHTML += "<h2>Code: " + code + "</h2>";
+    document.body.innerHTML += "<p>Aantal keer gevonden: " + filtered.length + "</p>";
+  });
+</script>
