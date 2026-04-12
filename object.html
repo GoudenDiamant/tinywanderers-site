@@ -55,7 +55,7 @@ const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
 const url = `https://docs.google.com/spreadsheets/d/1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw/gviz/tq?tqx=out:json`;
 
 const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
+const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
 
@@ -70,8 +70,9 @@ if (!code) {
       const json = JSON.parse(jsonString);
       const rows = json.table.rows;
 
-      const entries = rows.filter(r => r.c[0]?.v === code);
-
+      const entries = rows.filter(r => 
+        r.c[1]?.v?.toString().toUpperCase() === code.toUpperCase()
+      );
       if (entries.length === 0) {
         content.innerHTML = "<p>❌ Deze code bestaat nog niet of is nog niet geregistreerd.</p>";
         return;
