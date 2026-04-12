@@ -61,16 +61,23 @@
     let input = document.getElementById("searchInput").value.trim().toUpperCase();
   
     // basis validatie
-    if (!input.startsWith("TT-")) {
-      alert("Gebruik een code zoals TT-001");
+    if (!input.startsWith("TW-")) {
+      alert("Gebruik een code die start met 'TW-'.");
       return;
     }
   
-    // alleen eerste deel gebruiken (TT-001)
+    // alleen eerste deel gebruiken (TW-001)
     const shortCode = input.split("-").slice(0,2).join("-");
   
     window.location.href = "/" + shortCode;
   }
+  </script>
+   <script>
+  document.getElementById("searchInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      searchCode();
+    }
+  });
   </script>
 </body>
 </html>
