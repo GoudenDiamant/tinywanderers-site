@@ -95,9 +95,9 @@ if (!code) {
       html += `<div class="card"><h3>📍 Reisgeschiedenis</h3>`;
 
       entries.forEach(entry => {
-        const location = entry.c[1]?.v || "Onbekend";
-        const date = entry.c[2]?.v || "Onbekend";
-        const message = entry.c[3]?.v || "";
+        const location = entry.c[2]?.v || "Onbekend";
+        const date = entry.c[3]?.v || "Onbekend";
+        const message = entry.c[4]?.v || "";
 
         html += `
           <div class="card">
