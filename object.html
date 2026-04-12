@@ -71,7 +71,8 @@ if (!code) {
       const rows = json.table.rows;
 
       const entries = rows.filter(r => 
-        r.c[1]?.v?.toString().toUpperCase() === code.toUpperCase()
+        r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+      );
       );
       if (entries.length === 0) {
         content.innerHTML = "<p>❌ Deze code bestaat nog niet of is nog niet geregistreerd.</p>";
