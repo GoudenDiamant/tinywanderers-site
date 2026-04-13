@@ -2,17 +2,26 @@
 <html>
 <head>
   <title>Redirecting...</title>
-  <script>
+<script>
 const path = window.location.pathname;
-// ❌ NIET redirecten als het een bestand is
-if (path.match(/\.(jpg|jpeg|png|gif|webp|css|js|ico)$/i)) {
-  // laat gewoon laden
+
+// alles na laatste slash
+const lastPart = path.split("/").pop();
+
+// ❌ NIET redirecten als:
+// - het een bestand is (met .extensie)
+// - of in /images/ zit
+if (
+  path.startsWith("/images/") ||
+  lastPart.includes(".")
+) {
+  // niets doen → laat afbeelding laden
 } else {
-  // ✅ normale redirect
-  const code = path.substring(1); // verwijder /
+  // ✅ alleen echte codes redirecten
+  const code = lastPart;
   window.location.replace(`/object.html?code=${code}`);
 }
-  </script>
+</script>
 </head>
 <body>
   <p>Doorsturen...</p>
