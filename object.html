@@ -83,7 +83,7 @@ if (!code) {
     const objects = parseData(objectsText);
 
     // 🔍 entries (zoals je al had)
-    const entries = rows.filter(r => 
+    const entries = responses.filter(r => 
       r.c[1]?.v?.toString().toUpperCase().startsWith(code)
     );
 
