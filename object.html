@@ -97,11 +97,7 @@ if (!code) {
       return;
     }
 
-    // 📦 object data (veilig fallback)
-const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
-const status = obj?.c[2]?.v || "Onbekend";
-const startDate = obj?.c[3]?.v || null;
-const photo = obj?.c[4]?.v || "";
+
     
     // 🧮 dagen berekenen
 
@@ -128,6 +124,12 @@ if (startDate) {
     let days = (diff + " dagen");
   }
 }
+
+        // 📦 object data (veilig fallback)
+    const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
+    const status = obj?.c[2]?.v || "Onbekend";
+    const startDate = obj?.c[3]?.v || null;
+    const photo = obj?.c[4]?.v || "";
     // 📊 bestaande stats
     const total = entries.length;
     const firstDate = entries[0]?.c[2]?.v;
