@@ -52,72 +52,96 @@
 
 <script>
 const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
-const url = `https://docs.google.com/spreadsheets/d/1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw/gviz/tq?tqx=out:json`;
+
+// responses (formulier)
+const responsesURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Form Responses 1`;
+
+// object info
+const objectsURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Objects`;
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
 
-if (!code) {
-  content.innerHTML = "<p>Geen code opgegeven.</p>";
-} else {
-
-  fetch(url)
-    .then(res => res.text())
-    .then(data => {
-      const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
-      const json = JSON.parse(jsonString);
-      const rows = json.table.rows;
-
-      const entries = rows.filter(r => 
-        r.c[1]?.v?.toString().toUpperCase().startsWith(code)
-      );
-      if (entries.length === 0) {
-        content.innerHTML = "<p>❌ Deze code bestaat nog niet of is nog niet geregistreerd.</p>";
-        return;
-      }
-
-      // Stats
-      const total = entries.length;
-      const firstDate = entries[0].c[2]?.v;
-      const lastDate = entries[entries.length - 1].c[2]?.v;
-
-      let html = `
-        <div class="card">
-          <h2>Code: ${code}</h2>
-          <div class="stat">🔁 Aantal vondsten: ${total}</div>
-          <div class="stat">📅 Eerste vondst: ${firstDate || "Onbekend"}</div>
-          <div class="stat">📅 Laatste vondst: ${lastDate || "Onbekend"}</div>
-        </div>
-      `;
-
-      html += `<div class="card"><h3>📍 Reisgeschiedenis</h3>`;
-
-      entries.forEach(entry => {
-        const location = entry.c[2]?.v || "Onbekend";
-        const date = entry.c[3]?.v || "Onbekend";
-        const message = entry.c[4]?.v || "";
-
-        html += `
-          <div class="card">
-            <div><strong>📍 ${location}</strong></div>
-            <div>📅 ${date}</div>
-            ${message ? `<div class="message">💬 ${message}</div>` : ""}
-          </div>
-        `;
-      });
-
-      html += `</div>`;
-
-      content.innerHTML = html;
-    })
-    .catch(err => {
-      content.innerHTML = "<p>⚠️ Fout bij laden van data.</p>";
-      console.error(err);
-    });
+// helper
+function parseData(data) {
+  const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
+  return JSON.parse(jsonString).table.rows;
 }
-</script>
 
-</body>
-</html>
+Promise.all([
+  fetch(responsesURL).then(r => r.text()),
+  fetch(objectsURL).then(r => r.text())
+])
+.then(([responsesText, objectsText]) => {
+
+  const responses = parseData(responsesText);
+  const objects = parseData(objectsText);
+
+  // 🔍 vind object info
+  const obj = objects.find(r =>
+    r.c[0]?.v?.toString().toUpperCase() === code
+  );
+
+  // 🔍 vind entries
+  const entries = responses.filter(r =>
+    r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+  );
+
+  if (!obj) {
+    content.innerHTML = "<p>❌ Deze Tiny Wanderer bestaat niet.</p>";
+    return;
+  }
+
+  // 📦 object info
+  const name = obj.c[1]?.v || "Onbekend";
+  const status = obj.c[2]?.v || "Onbekend";
+  const startDate = obj.c[3]?.v || null;
+  const photo = obj.c[4]?.v || "";
+
+  // 🧮 dagen berekenen
+  let days = "Onbekend";
+  if (startDate) {
+    const start = new Date(startDate);
+    const now = new Date();
+    const diff = Math.floor((now - start) / (1000*60*60*24));
+    days = diff + " dagen";
+  }
+
+  let html = `
+    <div class="card">
+      <h2>${name} (${code})</h2>
+      ${photo ? `<img src="${photo}" style="width:100%; border-radius:10px;">` : ""}
+      <div class="stat">📅 Onderweg: ${days}</div>
+      <div class="stat">📍 Status: ${status}</div>
+      <div class="stat">🔁 Vondsten: ${entries.length}</div>
+    </div>
+  `;
+
+  html += `<div class="card"><h3>📍 Reisgeschiedenis</h3>`;
+
+  entries.forEach(entry => {
+    const loc = entry.c[2]?.v;
+    const date = entry.c[3]?.v;
+    const msg = entry.c[4]?.v;
+
+    html += `
+      <div class="card">
+        <strong>${loc}</strong><br>
+        📅 ${date}<br>
+        ${msg ? `<div class="message">💬 ${msg}</div>` : ""}
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  content.innerHTML = html;
+
+})
+.catch(err => {
+  content.innerHTML = "<p>⚠️ Fout bij laden</p>";
+  console.error(err);
+});
+</script>
