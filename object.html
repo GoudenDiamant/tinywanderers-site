@@ -1,62 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Tiny Wanderer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <nav>
-    <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/track">Registreer je vondst</a></li>
-    </ul>
-</nav>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
-      background: #B1CFF0;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .card {
-      background: white;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .stat {
-      font-size: 18px;
-      margin: 5px 0;
-    }
-
-    .message {
-      font-style: italic;
-      color: #555;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🌍 Tiny Wanderer</h1>
-      <div id="content">
-      <p>Laden...</p>
-    </div>
-  </div>
-
 <script>
 const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
 
-// responses (formulier)
+// 2 data bronnen
 const responsesURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Form Responses 1`;
-
-// object info
 const objectsURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Objects`;
 
 const params = new URLSearchParams(window.location.search);
@@ -64,84 +10,97 @@ const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
 
-// helper
+// helper functie
 function parseData(data) {
   const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
   return JSON.parse(jsonString).table.rows;
 }
 
-Promise.all([
-  fetch(responsesURL).then(r => r.text()),
-  fetch(objectsURL).then(r => r.text())
-])
-.then(([responsesText, objectsText]) => {
+if (!code) {
+  content.innerHTML = "<p>Geen code opgegeven.</p>";
+} else {
 
-  const responses = parseData(responsesText);
-  const objects = parseData(objectsText);
+  Promise.all([
+    fetch(responsesURL).then(r => r.text()),
+    fetch(objectsURL).then(r => r.text())
+  ])
+  .then(([responsesText, objectsText]) => {
 
-  // 🔍 vind object info
-  const obj = objects.find(r =>
-    r.c[0]?.v?.toString().toUpperCase() === code
-  );
+    const responses = parseData(responsesText);
+    const objects = parseData(objectsText);
 
-  // 🔍 vind entries
-  const entries = responses.filter(r =>
-    r.c[1]?.v?.toString().toUpperCase().startsWith(code)
-  );
+    // 🔍 entries (zoals je al had)
+    const entries = responses.filter(r => 
+      r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+    );
 
-  if (!obj) {
-    content.innerHTML = "<p>❌ Deze Tiny Wanderer bestaat niet.</p>";
-    return;
-  }
+    // 🔍 object info
+    const obj = objects.find(r =>
+      r.c[0]?.v?.toString().toUpperCase() === code
+    );
 
-  // 📦 object info
-  const name = obj.c[1]?.v || "Onbekend";
-  const status = obj.c[2]?.v || "Onbekend";
-  const startDate = obj.c[3]?.v || null;
-  const photo = obj.c[4]?.v || "";
+    if (!obj && entries.length === 0) {
+      content.innerHTML = "<p>❌ Deze code bestaat nog niet.</p>";
+      return;
+    }
 
-  // 🧮 dagen berekenen
-  let days = "Onbekend";
-  if (startDate) {
-    const start = new Date(startDate);
-    const now = new Date();
-    const diff = Math.floor((now - start) / (1000*60*60*24));
-    days = diff + " dagen";
-  }
+    // 📦 object data (veilig fallback)
+    const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
+    const status = obj?.c[2]?.v || "Onbekend";
+    const startDate = obj?.c[3]?.v || null;
+    const photo = obj?.c[4]?.v || "";
 
-  let html = `
-    <div class="card">
-      <h2>${name} (${code})</h2>
-      ${photo ? `<img src="${photo}" style="width:100%; border-radius:10px;">` : ""}
-      <div class="stat">📅 Onderweg: ${days}</div>
-      <div class="stat">📍 Status: ${status}</div>
-      <div class="stat">🔁 Vondsten: ${entries.length}</div>
-    </div>
-  `;
+    // 🧮 dagen berekenen
+    let days = "Onbekend";
+    if (startDate) {
+      const start = new Date(startDate);
+      const now = new Date();
+      const diff = Math.floor((now - start) / (1000*60*60*24));
+      days = diff + " dagen";
+    }
 
-  html += `<div class="card"><h3>📍 Reisgeschiedenis</h3>`;
+    // 📊 bestaande stats
+    const total = entries.length;
+    const firstDate = entries[0]?.c[2]?.v;
+    const lastDate = entries[entries.length - 1]?.c[2]?.v;
 
-  entries.forEach(entry => {
-    const loc = entry.c[2]?.v;
-    const date = entry.c[3]?.v;
-    const msg = entry.c[4]?.v;
-
-    html += `
+    // 🎨 HTML bouwen
+    let html = `
       <div class="card">
-        <strong>${loc}</strong><br>
-        📅 ${date}<br>
-        ${msg ? `<div class="message">💬 ${msg}</div>` : ""}
+        <h2>${name} (${code})</h2>
+        ${photo ? `<img src="${photo}" style="width:100%; border-radius:10px; margin-bottom:10px;">` : ""}
+        <div class="stat">📍 Status: ${status}</div>
+        <div class="stat">🕒 Onderweg: ${days}</div>
+        <div class="stat">🔁 Aantal vondsten: ${total}</div>
+        <div class="stat">📅 Eerste vondst: ${firstDate || "Onbekend"}</div>
+        <div class="stat">📅 Laatste vondst: ${lastDate || "Onbekend"}</div>
       </div>
     `;
+
+    html += `<div class="card"><h3>📍 Reisgeschiedenis</h3>`;
+
+    entries.forEach(entry => {
+      const location = entry.c[2]?.v || "Onbekend";
+      const date = entry.c[3]?.v || "Onbekend";
+      const message = entry.c[4]?.v || "";
+
+      html += `
+        <div class="card">
+          <div><strong>📍 ${location}</strong></div>
+          <div>📅 ${date}</div>
+          ${message ? `<div class="message">💬 ${message}</div>` : ""}
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+
+    content.innerHTML = html;
+
+  })
+  .catch(err => {
+    content.innerHTML = "<p>⚠️ Fout bij laden van data.</p>";
+    console.error(err);
   });
-
-  html += `</div>`;
-
-  content.innerHTML = html;
-
-})
-.catch(err => {
-  content.innerHTML = "<p>⚠️ Fout bij laden</p>";
-  console.error(err);
-});
+}
 </script>
