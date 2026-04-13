@@ -100,7 +100,8 @@ if (!code) {
 
     
     // 🧮 dagen berekenen
-
+const startDate = obj?.c[3]?.v || null;
+    
 if (startDate) {
   let start;
 
@@ -128,7 +129,7 @@ if (startDate) {
         // 📦 object data (veilig fallback)
     const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
     const status = obj?.c[2]?.v || "Onbekend";
-    const startDate = obj?.c[3]?.v || null;
+
     const photo = obj?.c[4]?.v || "";
     // 📊 bestaande stats
     const total = entries.length;
