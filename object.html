@@ -4,12 +4,14 @@
   <title>Tiny Wanderer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+
   <nav>
     <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/track">Registreer je vondst</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="/track">Registreer je vondst</a></li>
     </ul>
-</nav>
+  </nav>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,21 +42,26 @@
       font-style: italic;
       color: #555;
     }
+
+    img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🌍 Tiny Wanderer</h1>
-      <div id="content">
+    <div id="content">
       <p>Laden...</p>
     </div>
   </div>
 
-
 <script>
 const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
 
-// 2 data bronnen
 const responsesURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Form Responses 1`;
 const objectsURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Objects`;
 
@@ -63,7 +70,7 @@ const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
 
-// helper functie
+// helper
 function parseData(data) {
   const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
   return JSON.parse(jsonString).table.rows;
@@ -82,7 +89,7 @@ if (!code) {
     const responses = parseData(responsesText);
     const objects = parseData(objectsText);
 
-    // 🔍 entries (zoals je al had)
+    // 🔍 entries (formulier data)
     const entries = responses.filter(r => 
       r.c[1]?.v?.toString().toUpperCase().startsWith(code)
     );
@@ -93,56 +100,55 @@ if (!code) {
     );
 
     if (!obj && entries.length === 0) {
-      content.innerHTML = "<p>❌ Deze code bestaat nog niet.</p>";
+      content.innerHTML = "<p>❌ Deze code bestaat niet.</p>";
       return;
     }
 
-
-    
-    // 🧮 dagen berekenen
-const startDate = obj?.c[3]?.v || null;
-    
-if (startDate) {
-  let start;
-
-  if (typeof startDate === "string" && startDate.includes("-")) {
-    const parts = startDate.split("-");
-    
-    // check of formaat DD-MM-YYYY is
-    if (parts[0].length === 2) {
-      start = new Date(parts[2], parts[1] - 1, parts[0]);
-    } else {
-      start = new Date(startDate);
-    }
-  } else {
-    start = new Date(startDate);
-  }
-
-  const now = new Date();
-
-  if (!isNaN(start)) {
-    const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-    let days = (diff + " dagen");
-  }
-}
-
-        // 📦 object data (veilig fallback)
+    // 📦 object data
     const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
     const status = obj?.c[2]?.v || "Onbekend";
-
+    const startDate = obj?.c[3]?.v || null;
     const photo = obj?.c[4]?.v || "";
-    // 📊 bestaande stats
+
+    // 🧮 dagen berekenen (robuust)
+    let days = "Onbekend";
+
+    if (startDate) {
+      let start;
+
+      if (typeof startDate === "string") {
+        const parts = startDate.split("-");
+
+        if (parts.length === 3) {
+          // DD-MM-YYYY
+          start = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+          start = new Date(startDate);
+        }
+      } else {
+        start = new Date(startDate);
+      }
+
+      const now = new Date();
+
+      if (!isNaN(start.getTime())) {
+        const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+        days = diff === 0 ? "Vandaag gestart!" : diff + " dagen";
+      }
+    }
+
+    // 📊 stats
     const total = entries.length;
     const firstDate = entries[0]?.c[2]?.v;
     const lastDate = entries[entries.length - 1]?.c[2]?.v;
 
-    // 🎨 HTML bouwen
+    // 🎨 HTML
     let html = `
       <div class="card">
         <h2>${name} (${code})</h2>
-        ${photo ? `<img src="${photo}" style="width:100%; border-radius:10px; margin-bottom:10px;">` : ""}
+        ${photo ? `<img src="${photo}">` : ""}
         <div class="stat">📍 Status: ${status}</div>
-        <div class="stat">🕒 Onderweg: ${days} + " dagen"</div>
+        <div class="stat">🕒 Onderweg: ${days}</div>
         <div class="stat">🔁 Aantal vondsten: ${total}</div>
         <div class="stat">📅 Eerste vondst: ${firstDate || "Onbekend"}</div>
         <div class="stat">📅 Laatste vondst: ${lastDate || "Onbekend"}</div>
@@ -176,3 +182,6 @@ if (startDate) {
   });
 }
 </script>
+
+</body>
+</html>
