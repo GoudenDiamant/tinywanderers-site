@@ -99,6 +99,12 @@ if (!code) {
       r.c[0]?.v?.toString().toUpperCase() === code
     );
 
+    // info --> status
+    const resp = responses.find(r =>
+      r.c[0]?.v?.toString().toUpperCase()
+    );
+
+    
     if (!obj && entries.length === 0) {
       content.innerHTML = "<p>❌ Deze code bestaat niet.</p>";
       return;
@@ -106,7 +112,7 @@ if (!code) {
 
     // 📦 object data
     const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
-    const status = responses?.c[5]?.v || "Onbekend";
+    const status = resp?.c[5]?.v || "Onbekend";
     const startDate = obj?.c[3]?.v || null;
     const photo = obj?.c[4]?.v || "";
 
