@@ -98,12 +98,6 @@ if (!code) {
     const obj = objects.find(r =>
       r.c[0]?.v?.toString().toUpperCase() === code
     );
-
-    // info --> status
-    const resp = responses.find(r =>
-      r.c[5]?.v
-      );
-
     
     if (!obj && entries.length === 0) {
       content.innerHTML = "<p>❌ Deze code bestaat niet.</p>";
@@ -112,7 +106,7 @@ if (!code) {
 
     // 📦 object data
     const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
-    const status = resp?.c[5]?.v || "Onbekend";
+    const status = obj?.c[2]?.v || "Onbekend";
     const startDate = obj?.c[3]?.v || null;
     const photo = obj?.c[4]?.v || "";
 
@@ -147,7 +141,15 @@ if (!code) {
     const total = entries.length;
     const firstDate = entries[0]?.c[2]?.v;
     const lastDate = entries[entries.length - 1]?.c[2]?.v;
+    
+    const latestEntry = entries[entries.length - 1];
+    const currentStatus = latestEntry?.c[5]?.v || "Onbekend";
 
+    let statusIcon = "🌍";
+
+    if (currentStatus.includes("logeren")) statusIcon = "🏠";
+    if (currentStatus.includes("Verhuisd")) statusIcon = "🏡";
+    if (currentStatus.includes("Vermist")) statusIcon = "❓";
     // 🎨 HTML
     let html = `
       <div class="card">
@@ -155,6 +157,7 @@ if (!code) {
         ${photo ? `<img src="${photo}">` : ""}
         <div class="stat">📍 Status: ${status}</div>
         <div class="stat">🕒 Onderweg: ${days}</div>
+        <div class="stat">${statusIcon} Status: ${currentStatus}</div>
         <div class="stat">🔁 Aantal vondsten: ${total}</div>
         <div class="stat">📅 Eerste vondst: ${firstDate || "Onbekend"}</div>
         <div class="stat">📅 Laatste vondst: ${lastDate || "Onbekend"}</div>
