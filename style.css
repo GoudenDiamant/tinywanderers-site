@@ -77,7 +77,7 @@ button {
   text-align: start;  
 }
 
-widget {
+.widget {
     background: rgba(230,230,250,1);
     padding: 40px;
     border-radius: 20px;
@@ -85,6 +85,6 @@ widget {
     width: 100%;
 }
 
-div {
+.div {
     width: 33%;
 }
