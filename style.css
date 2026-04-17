@@ -82,5 +82,5 @@ button {
     border-radius: 20px;
     box-shadow: 0 0 30px rgba(255,100,50,0.6);
     text-align: center;
-    width: 420px;
+    width: 100%;
 }
