@@ -84,3 +84,7 @@ button {
     text-align: center;
     width: 100%;
 }
+
+div {
+    width: 33%;
+}
