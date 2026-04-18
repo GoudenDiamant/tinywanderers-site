@@ -95,17 +95,32 @@ if (!code) {
     );
     
     function formatDate(dateObj) {
-      if (!dateObj) return "Onbekend";
-    
-      const d = new Date(dateObj);
-    
-      const day = d.getDate();
-      const month = d.getMonth() + 1; // 🔥 belangrijk!
-      const year = d.getFullYear();
-    
-      return `${day}-${month}-${year}`;
+    if (!dateObj) return "Onbekend";
+  
+    let d;
+  
+    // 👉 als het al een Date object is
+    if (dateObj instanceof Date) {
+      d = dateObj;
     }
-    
+    // 👉 als het een string is zoals "Date(2026,3,12)"
+    else if (typeof dateObj === "string" && dateObj.startsWith("Date(")) {
+      const parts = dateObj.match(/\d+/g);
+      d = new Date(parts[0], parts[1], parts[2]);
+    }
+    // 👉 fallback
+    else {
+      d = new Date(dateObj);
+    }
+  
+    if (isNaN(d)) return "Onbekend";
+  
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+  
+    return `${day}-${month}-${year}`;
+  }
     // 🔍 object info
     const obj = objects.find(r =>
       r.c[0]?.v?.toString().toUpperCase() === code
@@ -159,8 +174,8 @@ if (!code) {
         <div class="stat">🕒 Onderweg: ${days}</div>
         <div class="stat">${statusIcon} Status: ${currentStatus}</div>
         <div class="stat">🔁 Aantal vondsten: ${total}</div>
-        <div class="stat">📅 Eerste vondst: ${firstDateFormatted}</div>
-        <div class="stat">📅 Laatste vondst: ${lastDateFormatted}</div>
+        <div class="stat">📅 Eerste vondst: ${formatDate(firstDate)}</div>
+        <div class="stat">📅 Laatste vondst: ${formatDate(lastDate)}</div>
       </div>
     `;
 
