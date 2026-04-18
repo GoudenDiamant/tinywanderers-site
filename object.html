@@ -110,29 +110,23 @@ if (!code) {
     const startDate = obj?.c[3]?.v || null;
     const photo = obj?.c[4]?.v || "";
 
-    // 🧮 dagen berekenen (robuust)
+    // 🧮 dagen berekenen ((niet heel erg) robuust)
     let days = "Onbekend";
+    // Verstreken dagen berkenen (goede versie):
+    // Startdatum
+    const startDatum = new Date("2026-04-12");
+    // Huidige datum
+    const nu = new Date();
+    
+    // Verschil in milliseconden
+    const verschilTijd = nu - startDatum;
+    
+    // Omrekenen naar dagen: 1000ms * 60s * 60m * 24u
+    const verstrekenDagen = Math.floor(verschilTijd / (1000 * 60 * 60 * 24));
+    
+    // Resultaat tonen
+    document.getElementById("dagen").innerText = verstrekenDagen;
 
-    if (startDate) {
-      let start;
-
-      if (typeof startDate === "string") {
-        const parts = startDate.split("-");
-
-        if (parts.length === 3) {
-          // DD-MM-YYYY
-          start = new Date(parts[2], parts[1] - 1, parts[0]);
-        } else {
-          start = new Date(startDate);
-        }
-      } else {
-        start = new Date(startDate);
-      }
-
-      const now = new Date();
-
-      if (!isNaN(start.getTime())) {
-        const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
         days = diff === 0 ? "Vandaag gestart!" : diff + " dagen";
       }
     }
