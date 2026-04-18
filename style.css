@@ -83,6 +83,8 @@ button {
     border-radius: 20px;
     text-align: center;
     width: 100%;
+    rgba(242, 226, 225, 1);
+    box-shadow: 0 0 30px rgba(242, 226, 225, 0,5);
 }
 
 .div {
