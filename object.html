@@ -93,7 +93,19 @@ if (!code) {
     const entries = responses.filter(r => 
       r.c[1]?.v?.toString().toUpperCase().startsWith(code)
     );
-
+    
+    function formatDate(dateObj) {
+      if (!dateObj) return "Onbekend";
+    
+      const d = new Date(dateObj);
+    
+      const day = d.getDate();
+      const month = d.getMonth() + 1; // 🔥 belangrijk!
+      const year = d.getFullYear();
+    
+      return `${day}-${month}-${year}`;
+    }
+    
     // 🔍 object info
     const obj = objects.find(r =>
       r.c[0]?.v?.toString().toUpperCase() === code
@@ -110,34 +122,30 @@ if (!code) {
     const startDate = obj?.c[3]?.v || null;
     const photo = obj?.c[4]?.v || "";
 
-    function convertDate(input) {
-    const [dd, mm, yyyy] = input.split("-");
-    return `${yyyy}-${mm}-${dd}`;
-  }
-  const formatted = convertDate(startDate);
+  
+    const formatted = convertDate(startDate);
 
   
-    // 🧮 dagen berekenen ((niet heel erg) robuust)
     let days = "Onbekend";
-    
-    // Huidige datum
-    const nu = new Date();
-    
-    // Verschil in milliseconden
-    const verschilTijd = nu - formatted;
-    
-    // Omrekenen naar dagen
-    const verstrekenDagen = Math.floor(verschilTijd / (1000 * 60 * 60 * 24));
-    
-    // Tekstversie
-    days = verstrekenDagen + " dagen";
 
+    if (startDate) {
+      const start = new Date(startDate);
+      const now = new Date();
+    
+      const diffTime = now - start;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+      days = diffDays + " dagen";
+    }
 
+    //entries sort
+    entries.sort((a, b) => new Date(a.c[3]?.v) - new Date(b.c[3]?.v));
     // 📊 stats
     const total = entries.length;
-    const firstDate = entries[0]?.c[2]?.v;
-    const lastDate = entries[entries.length - 1]?.c[2]?.v;
-    
+    const firstDate = entries[0]?.c[3]?.v;
+    const lastDate = entries[entries.length - 1]?.c[3]?.v;
+    const firstDateFormatted = formatDate(firstDate);
+    const lastDateFormatted = formatDate(lastDate);
     const latestEntry = entries[entries.length - 1];
     const currentStatus = latestEntry?.c[5]?.v || "Onbekend";
 
@@ -155,8 +163,8 @@ if (!code) {
         <div class="stat">🕒 Onderweg: ${days}</div>
         <div class="stat">${statusIcon} Status: ${currentStatus}</div>
         <div class="stat">🔁 Aantal vondsten: ${total}</div>
-        <div class="stat">📅 Eerste vondst: ${firstDate || "Onbekend"}</div>
-        <div class="stat">📅 Laatste vondst: ${lastDate || "Onbekend"}</div>
+        <div class="stat">📅 Eerste vondst: ${firstDateFormatted}</div>
+        <div class="stat">📅 Laatste vondst: ${lastDateFormatted}</div>
       </div>
     `;
 
@@ -170,7 +178,7 @@ if (!code) {
       html += `
         <div class="card">
           <div><strong>📍 ${location}</strong></div>
-          <div>📅 ${date}</div>
+          <div>📅 ${formatDate(date)}</div>
           ${message ? `<div class="message">💬 ${message}</div>` : ""}
         </div>
       `;
