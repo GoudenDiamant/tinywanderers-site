@@ -110,6 +110,13 @@ if (!code) {
     const startDate = obj?.c[3]?.v || null;
     const photo = obj?.c[4]?.v || "";
 
+    function convertDate(input) {
+    const [dd, mm, yyyy] = input.split("-");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  const formatted = convertDate(startDate);
+
+  
     // 🧮 dagen berekenen ((niet heel erg) robuust)
     let days = "Onbekend";
     
@@ -117,7 +124,7 @@ if (!code) {
     const nu = new Date();
     
     // Verschil in milliseconden
-    const verschilTijd = nu - startDate;
+    const verschilTijd = nu - formatted;
     
     // Omrekenen naar dagen
     const verstrekenDagen = Math.floor(verschilTijd / (1000 * 60 * 60 * 24));
