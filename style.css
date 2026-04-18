@@ -78,17 +78,3 @@ button {
 .p {
   text-align: start;  
 }
-
-div {
-    color: rgba(242, 226, 225, 1);
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    width:33%;  
-    grid-template-columns: 33% 33% 33%;
-    display:inline-block;
-    margin: 25px;
-    box-shadow: 
-      0 0 10px rgba(255, 140, 0, 0.4),
-      0 0 20px rgba(255, 140, 0, 0.2);
-}
