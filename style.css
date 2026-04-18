@@ -35,7 +35,7 @@ body {
 }
 
 .card {
-  background: #2f5d3a; /* lichter groen */
+  background: rgba(180, 222, 216, 1.0); /* lichter groen */
   padding: 15px;
   margin: 10px 0;
   border-radius: 10px;
