@@ -113,23 +113,17 @@ if (!code) {
     // 🧮 dagen berekenen ((niet heel erg) robuust)
     let days = "Onbekend";
     
-    // Startdatum
-    const startDatum = new Date("2026-04-12");
-    
     // Huidige datum
     const nu = new Date();
     
     // Verschil in milliseconden
-    const verschilTijd = nu - startDatum;
+    const verschilTijd = nu - startDate;
     
     // Omrekenen naar dagen
     const verstrekenDagen = Math.floor(verschilTijd / (1000 * 60 * 60 * 24));
     
-    // Resultaat tonen
-    document.getElementById("dagen").innerText = verstrekenDagen;
-    
     // Tekstversie
-    days = verstrekenDagen === 0 ? "Vandaag gestart!" : verstrekenDagen + " dagen";
+    days = verstrekenDagen + " dagen";
 
 
     // 📊 stats
