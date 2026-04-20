@@ -55,6 +55,11 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
+  // 📦 object data
+const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
+const status = obj?.c[2]?.v || "Onbekend";
+const startDate = obj?.c[3]?.v || null;
+const photo = obj?.c[4]?.v || "";
   //functie
 function parseDate(dateObj) {
   if (!dateObj) return null;
@@ -115,9 +120,9 @@ if (!code) {
       days = diffDays + " dagen";
     }
       
-    const day = d.getDate();
-    const month = d.getMonth() + 1;
-    const year = d.getFullYear();
+    const day = days.getDate();
+    const month = days.getMonth() + 1;
+    const year = days.getFullYear();
   
     return `${day}-${month}-${year}`;
   }
@@ -131,12 +136,6 @@ if (!code) {
       content.innerHTML = "<p>❌ Deze code bestaat niet.</p>";
       return;
     }
-
-    // 📦 object data
-    const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
-    const status = obj?.c[2]?.v || "Onbekend";
-    const startDate = obj?.c[3]?.v || null;
-    const photo = obj?.c[4]?.v || "";
   
     let days = "Onbekend";
 
