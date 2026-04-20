@@ -52,6 +52,13 @@
 </head>
 
 <body>
+  <div class="navbar">
+    <input type="text" id="searchInput" placeholder="Zoek je Tiny Wanderer (bijv. TW-001)">
+    <button onclick="searchCode()">Zoek</button>
+      <p style="text-align:center; font-size: 14px;">
+  🔍   Vul de code in die op je Tiny Wanderer staat
+      </p>
+  </div>
   <div class="container">
     <h1>🌍 Tiny Wanderers - Specifieke Tiny Wanderer</h1>
     <div id="content">
@@ -208,6 +215,29 @@ if (!code) {
     console.error(err);
   });
 }
+</script>
+<script>
+  function searchCode() {
+    let input = document.getElementById("searchInput").value.trim().toUpperCase();
+  
+    // basis validatie
+    if (!input.startsWith("TW-")) {
+      alert("Gebruik een code die start met 'TW-'.");
+      return;
+    }
+  
+    // alleen eerste deel gebruiken (TW-001)
+    const shortCode = input.split("-").slice(0,2).join("-");
+  
+    window.location.href = "/" + shortCode;
+  }
+  </script>
+   <script>
+  document.getElementById("searchInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      searchCode();
+    }
+  });
 </script>
 
 </body>
