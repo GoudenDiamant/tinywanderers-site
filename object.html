@@ -55,7 +55,28 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
+  //functie
+function parseDate(dateObj) {
+  if (!dateObj) return null;
 
+  // al een Date object
+  if (dateObj instanceof Date) return dateObj;
+
+  // Google formaat: Date(2026,3,12)
+  if (typeof dateObj === "string" && dateObj.startsWith("Date(")) {
+    const parts = dateObj.match(/\d+/g);
+    return new Date(parts[0], parts[1], parts[2]);
+  }
+
+  // formaat: 12-04-2026
+  if (typeof dateObj === "string" && dateObj.includes("-")) {
+    const [dd, mm, yyyy] = dateObj.split("-");
+    return new Date(yyyy, mm - 1, dd);
+  }
+
+  // fallback
+  return new Date(dateObj);
+}
 // helper
 function parseData(data) {
   const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
@@ -83,30 +104,24 @@ if (!code) {
     function formatDate(dateObj) {
     if (!dateObj) return "Onbekend";
   
-    let d;
-  
-    // 👉 als het al een Date object is
-    if (dateObj instanceof Date) {
-      d = dateObj;
+   let days = "Onbekend";
+
+   const start = parseDate(startDate);
+    
+   if (start && !isNaN(start)) {
+      const now = new Date();
+      const diffTime = now - start;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      days = diffDays + " dagen";
     }
-    // 👉 als het een string is zoals "Date(2026,3,12)"
-    else if (typeof dateObj === "string" && dateObj.startsWith("Date(")) {
-      const parts = dateObj.match(/\d+/g);
-      d = new Date(parts[0], parts[1], parts[2]);
-    }
-    // 👉 fallback
-    else {
-      d = new Date(dateObj);
-    }
-  
-    if (isNaN(d)) return "Onbekend";
-  
+      
     const day = d.getDate();
     const month = d.getMonth() + 1;
     const year = d.getFullYear();
   
     return `${day}-${month}-${year}`;
   }
+    
     // 🔍 object info
     const obj = objects.find(r =>
       r.c[0]?.v?.toString().toUpperCase() === code
