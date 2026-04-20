@@ -55,6 +55,10 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
+// 🔍 object info
+const obj = objects.find(r =>
+  r.c[0]?.v?.toString().toUpperCase() === code
+                        );  
   // 📦 object data
 const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
 const status = obj?.c[2]?.v || "Onbekend";
@@ -127,10 +131,7 @@ if (!code) {
     return `${day}-${month}-${year}`;
   }
     
-    // 🔍 object info
-    const obj = objects.find(r =>
-      r.c[0]?.v?.toString().toUpperCase() === code
-    );
+
     
     if (!obj && entries.length === 0) {
       content.innerHTML = "<p>❌ Deze code bestaat niet.</p>";
