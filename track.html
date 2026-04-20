@@ -47,5 +47,12 @@
     window.location.href = "/" + shortCode;
   }
   </script>
+  <script>
+  document.getElementById("searchInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      searchCode();
+    }
+  });
+  </script>
 </body>
 </html>
