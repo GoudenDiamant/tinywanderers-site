@@ -31,5 +31,21 @@
     Ga naar formulier
     </a>
   </div>
+  <script>
+    function searchCode() {
+    let input = document.getElementById("searchInput").value.trim().toUpperCase();
+  
+    // basis validatie
+    if (!input.startsWith("TW-")) {
+      alert("Gebruik een code die start met 'TW-'.");
+      return;
+    }
+  
+    // alleen eerste deel gebruiken (TW-001)
+    const shortCode = input.split("-").slice(0,2).join("-");
+  
+    window.location.href = "/" + shortCode;
+  }
+  </script>
 </body>
 </html>
