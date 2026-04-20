@@ -4,7 +4,7 @@
   <title>Tiny Wanderers - Specifieke Tiny Wanderer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  
+
   <nav>
     <ul>
       <li><a href="/">Home</a></li>
@@ -14,9 +14,23 @@
   </nav>
 
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
 
     h1 {
       text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .stat {
@@ -39,7 +53,7 @@
 
 <body>
   <div class="container">
-    <h1>🌍 Tiny Wanderers - Specefieke Tiny Wanderer</h1>
+    <h1>🌍 Tiny Wanderers - Specifieke Tiny Wanderer</h1>
     <div id="content">
       <p>Laden...</p>
     </div>
@@ -55,41 +69,42 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
-// 🔍 object info
-const obj = objects.find(r =>
-  r.c[0]?.v?.toString().toUpperCase() === code
-                        );  
-  // 📦 object data
-const name = obj?.c[1]?.v || "Onbekende Tiny Wanderer";
-const status = obj?.c[2]?.v || "Onbekend";
-const startDate = obj?.c[3]?.v || null;
-const photo = obj?.c[4]?.v || "";
-  //functie
+
+// 🔧 JSON parser
+function parseData(data) {
+  const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
+  return JSON.parse(jsonString).table.rows;
+}
+
+// 🔧 datum parser (werkt voor ALLES)
 function parseDate(dateObj) {
   if (!dateObj) return null;
 
-  // al een Date object
   if (dateObj instanceof Date) return dateObj;
 
-  // Google formaat: Date(2026,3,12)
   if (typeof dateObj === "string" && dateObj.startsWith("Date(")) {
     const parts = dateObj.match(/\d+/g);
     return new Date(parts[0], parts[1], parts[2]);
   }
 
-  // formaat: 12-04-2026
   if (typeof dateObj === "string" && dateObj.includes("-")) {
     const [dd, mm, yyyy] = dateObj.split("-");
     return new Date(yyyy, mm - 1, dd);
   }
 
-  // fallback
   return new Date(dateObj);
 }
-// helper
-function parseData(data) {
-  const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
-  return JSON.parse(jsonString).table.rows;
+
+// 🎨 datum formatter
+function formatDate(dateObj) {
+  const d = parseDate(dateObj);
+  if (!d || isNaN(d)) return "Onbekend";
+
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
 }
 
 if (!code) {
@@ -105,72 +120,60 @@ if (!code) {
     const responses = parseData(responsesText);
     const objects = parseData(objectsText);
 
-    // 🔍 entries (formulier data)
+    // 📍 entries
     const entries = responses.filter(r => 
       r.c[1]?.v?.toString().toUpperCase().startsWith(code)
     );
-    
-    function formatDate(dateObj) {
-    if (!dateObj) return "Onbekend";
-  
-   let days = "Onbekend";
 
-   const start = parseDate(startDate);
-    
-   if (start && !isNaN(start)) {
-      const now = new Date();
-      const diffTime = now - start;
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      days = diffDays + " dagen";
-    }
-      
-    const day = days.getDate();
-    const month = days.getMonth() + 1;
-    const year = days.getFullYear();
-  
-    return `${day}-${month}-${year}`;
-  }
-    
+    // 📦 object info
+    const obj = objects.find(r =>
+      r.c[0]?.v?.toString().toUpperCase() === code
+    );
 
-    
     if (!obj && entries.length === 0) {
       content.innerHTML = "<p>❌ Deze code bestaat niet.</p>";
       return;
     }
-  
-    let days = "Onbekend";
 
-    if (startDate) {
-      const start = new Date(startDate);
+    // 📦 object data
+    const name = obj?.c[1]?.v || "Onbekend";
+    const status = obj?.c[2]?.v || "Onbekend";
+    const startDate = obj?.c[3]?.v || null;
+    const photo = obj?.c[4]?.v || "";
+
+    // 🧮 dagen berekenen
+    let days = "Onbekend";
+    const start = parseDate(startDate);
+
+    if (start && !isNaN(start)) {
       const now = new Date();
-    
       const diffTime = now - start;
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-      days = diffDays + " dagen";
+      days = diffDays === 1 ? "1 dag" : diffDays + " dagen";
     }
 
-    //entries sort
-    entries.sort((a, b) => new Date(a.c[3]?.v) - new Date(b.c[3]?.v));
+    // 🔄 sorteer entries op datum
+    entries.sort((a, b) => parseDate(a.c[3]?.v) - parseDate(b.c[3]?.v));
+
     // 📊 stats
     const total = entries.length;
     const firstDate = entries[0]?.c[3]?.v;
     const lastDate = entries[entries.length - 1]?.c[3]?.v;
-    const firstDateFormatted = formatDate(firstDate);
-    const lastDateFormatted = formatDate(lastDate);
+
     const latestEntry = entries[entries.length - 1];
     const currentStatus = latestEntry?.c[5]?.v || "Onbekend";
 
     let statusIcon = "🌍";
+    if (currentStatus?.toLowerCase().includes("logeren")) statusIcon = "🏠";
+    if (currentStatus?.toLowerCase().includes("verhuisd")) statusIcon = "🏡";
+    if (currentStatus?.toLowerCase().includes("vermist")) statusIcon = "❓";
 
-    if (currentStatus.includes("logeren")) statusIcon = "🏠";
-    if (currentStatus.includes("Verhuisd")) statusIcon = "🏡";
-    if (currentStatus.includes("Vermist")) statusIcon = "❓";
     // 🎨 HTML
     let html = `
       <div class="card">
         <h2>${name} (${code})</h2>
         ${photo ? `<img src="${photo}">` : ""}
+        <div class="stat">📍 Status: ${status}</div>
         <div class="stat">🕒 Onderweg: ${days}</div>
         <div class="stat">${statusIcon} Status: ${currentStatus}</div>
         <div class="stat">🔁 Aantal vondsten: ${total}</div>
@@ -183,7 +186,7 @@ if (!code) {
 
     entries.forEach(entry => {
       const location = entry.c[2]?.v || "Onbekend";
-      const date = entry.c[3]?.v || "Onbekend";
+      const date = entry.c[3]?.v;
       const message = entry.c[4]?.v || "";
 
       html += `
@@ -205,8 +208,6 @@ if (!code) {
     console.error(err);
   });
 }
-console.log(startDate)
-console.log(firstDate)
 </script>
 
 </body>
