@@ -75,6 +75,27 @@ const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
 
+//Afstanden berekenen
+  
+  entries.sort((a, b) => {
+    return new Date(a.c[0]?.v) - new Date(b.c[0]?.v);
+  });
+  
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // straal aarde in km
+
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat/2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 // 🔧 JSON parser
 function parseData(data) {
   const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
@@ -130,6 +151,28 @@ if (!code) {
       r.c[1]?.v?.toString().toUpperCase().startsWith(code)
     );
 
+
+//Afstand Berkenen 2    
+let totalDistance = 0;
+
+for (let i = 1; i < entries.length; i++) {
+  const prev = entries[i - 1];
+  const curr = entries[i];
+
+  const lat1 = parseFloat(prev.c[6]?.v);
+  const lon1 = parseFloat(prev.c[7]?.v);
+
+  const lat2 = parseFloat(curr.c[6]?.v);
+  const lon2 = parseFloat(curr.c[7]?.v);
+
+  if (!lat1 || !lon1 || !lat2 || !lon2) continue;
+
+  totalDistance += getDistance(lat1, lon1, lat2, lon2);
+}
+
+// afronden
+totalDistance = Math.round(totalDistance);
+
     // 📦 object info
     const obj = objects.find(r =>
       r.c[0]?.v?.toString().toUpperCase() === code
@@ -180,6 +223,7 @@ if (!code) {
         <h2>${name} (${code})</h2>
         ${photo ? `<img src="${photo}">` : ""}
         <div class="stat">🕒 Onderweg: ${days}</div>
+        <div class="stat">🧭 Afstand afgelegd: ${totalDistance} km</div>
         <div class="stat">${statusIcon} Status: ${currentStatus}</div>
         <div class="stat">🔁 Aantal vondsten: ${total}</div>
         <div class="stat">📅 Eerste vondst: ${formatDate(firstDate)}</div>
