@@ -75,6 +75,11 @@ const code = params.get("code")?.toUpperCase();
 
 const content = document.getElementById("content");
 
+    // 📍 entries
+const entries = responses.filter(r => 
+  r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+);
+
 //Afstanden berekenen
   
   entries.sort((a, b) => {
@@ -145,12 +150,6 @@ if (!code) {
 
     const responses = parseData(responsesText);
     const objects = parseData(objectsText);
-
-    // 📍 entries
-    const entries = responses.filter(r => 
-      r.c[1]?.v?.toString().toUpperCase().startsWith(code)
-    );
-
 
 //Afstand Berkenen 2    
 let totalDistance = 0;
