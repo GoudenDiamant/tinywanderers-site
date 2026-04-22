@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Track je vondst</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial; text-align: center; padding: 40px;">
+<nav>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/track">Registreer je vondst</a></li>
+        <li><a href="/donations">Donaties</a></li>
+    </ul>
+</nav>
+  <div class="navbar">
+    <input type="text" id="searchInput" placeholder="Zoek je Tiny Wanderer (bijv. TW-001)">
+    <button onclick="searchCode()">Zoek</button>
+      <p style="text-align:center; font-size: 14px;">
+  🔍   Vul de code in die op je Tiny Wanderer staat
+      </p>
+  </div>
+
+  <div class ="card">
+    <h1>Galerij</h1>
+    <p>Hier staan alle Tiny Wanderers die ooit gemaakt zijn, met foto, status, afstand en de verstreken tijd. Het is ook mogelijk om te zoeken of te sorteren op bepaalde Tiny Wanderers met bepaalde waardes.</p>
+  </div>
+
+  
+  <script>
+    function searchCode() {
+    let input = document.getElementById("searchInput").value.trim().toUpperCase();
+  
+    // basis validatie
+    if (!input.startsWith("TW-")) {
+      alert("Gebruik een code die start met 'TW-'.");
+      return;
+    }
+  
+    // alleen eerste deel gebruiken (TW-001)
+    const shortCode = input.split("-").slice(0,2).join("-");
+  
+    window.location.href = "/" + shortCode;
+  }
+  </script>
+  <script>
+  document.getElementById("searchInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      searchCode();
+    }
+  });
+  </script>
+</body>
+</html>
