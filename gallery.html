@@ -131,7 +131,7 @@ Promise.all([
     const days = calcDays(startDate);
 
     html += `
-      <div class="card">
+      <div class="card" onclick="window.location.href='/object?code=${code}'">
         ${photo ? `<img src="${photo}">` : ""}
         <h3>${name}</h3>
         <div class="stat">🧭 ${totalDistance} km</div>
