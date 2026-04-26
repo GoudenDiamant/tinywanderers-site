@@ -1,54 +1,154 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Track je vondst</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Tiny Wanderers - Galerij</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: Arial; text-align: center; padding: 40px;">
-<nav>
+  <link rel="stylesheet" href="style.css">
+
+  <nav>
     <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/track">Registreer je vondst</a></li>
-        <li><a href="/donations">Donaties</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="/track">Registreer je vondst</a></li>
+      <li><a href="/gallery">Galerij</a></li>
     </ul>
-</nav>
-  <div class="navbar">
-    <input type="text" id="searchInput" placeholder="Zoek je Tiny Wanderer (bijv. TW-001)">
-    <button onclick="searchCode()">Zoek</button>
-      <p style="text-align:center; font-size: 14px;">
-  🔍   Vul de code in die op je Tiny Wanderer staat
-      </p>
+  </nav>
+
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .small {
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🌍 Tiny Wanderers</h1>
+    <div id="gallery" class="grid">
+      <p>Laden...</p>
+    </div>
   </div>
 
-  <div class ="card">
-    <h1>Galerij</h1>
-    <p>Hier staan alle Tiny Wanderers die ooit gemaakt zijn, met foto, status, afstand en de verstreken tijd. Het is ook mogelijk om te zoeken of te sorteren op bepaalde Tiny Wanderers met bepaalde waardes.</p>
-  </div>
+<script>
+const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
 
-  
-  <script>
-    function searchCode() {
-    let input = document.getElementById("searchInput").value.trim().toUpperCase();
-  
-    // basis validatie
-    if (!input.startsWith("TW-")) {
-      alert("Gebruik een code die start met 'TW-'.");
-      return;
+const responsesURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Formulierreacties 1`;
+const objectsURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Objects`;
+
+function parseData(data) {
+  const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
+  return JSON.parse(jsonString).table.rows;
+}
+
+// 🌍 afstand functie
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat/2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// 📅 dagen berekenen
+function calcDays(startDate) {
+  if (!startDate) return "Onbekend";
+
+  const start = new Date(startDate);
+  const now = new Date();
+
+  const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  return diff + " dagen";
+}
+
+const gallery = document.getElementById("gallery");
+
+Promise.all([
+  fetch(responsesURL).then(r => r.text()),
+  fetch(objectsURL).then(r => r.text())
+])
+.then(([responsesText, objectsText]) => {
+
+  const responses = parseData(responsesText);
+  const objects = parseData(objectsText);
+
+  let html = "";
+
+  objects.forEach(obj => {
+    const code = obj.c[0]?.v;
+    const name = obj.c[1]?.v || code;
+    const startDate = obj.c[3]?.v;
+    const photo = obj.c[4]?.v || "";
+
+    // 📍 entries van deze TW
+    const entries = responses.filter(r =>
+      r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+    );
+
+    // sorteren op tijd
+    entries.sort((a, b) => new Date(a.c[0]?.v) - new Date(b.c[0]?.v));
+
+    // 🧭 afstand berekenen
+    let totalDistance = 0;
+
+    for (let i = 1; i < entries.length; i++) {
+      const prev = entries[i - 1];
+      const curr = entries[i];
+
+      const lat1 = parseFloat(prev.c[6]?.v);
+      const lon1 = parseFloat(prev.c[7]?.v);
+      const lat2 = parseFloat(curr.c[6]?.v);
+      const lon2 = parseFloat(curr.c[7]?.v);
+
+      if (!lat1 || !lon1 || !lat2 || !lon2) continue;
+
+      totalDistance += getDistance(lat1, lon1, lat2, lon2);
     }
-  
-    // alleen eerste deel gebruiken (TW-001)
-    const shortCode = input.split("-").slice(0,2).join("-");
-  
-    window.location.href = "/" + shortCode;
-  }
-  </script>
-  <script>
-  document.getElementById("searchInput").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-      searchCode();
-    }
+
+    totalDistance = Math.round(totalDistance);
+
+    // 📅 dagen
+    const days = calcDays(startDate);
+
+    html += `
+      <div class="card">
+        ${photo ? `<img src="${photo}">` : ""}
+        <h3>${name}</h3>
+        <div class="stat">🧭 ${totalDistance} km</div>
+        <div class="stat">🕒 ${days}</div>
+        <div class="small">${code}</div>
+      </div>
+    `;
   });
-  </script>
+
+  gallery.innerHTML = html;
+
+})
+.catch(err => {
+  gallery.innerHTML = "<p>⚠️ Fout bij laden</p>";
+  console.error(err);
+});
+</script>
+
 </body>
 </html>
