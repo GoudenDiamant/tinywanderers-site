@@ -74,10 +74,21 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function calcDays(startDate) {
   if (!startDate) return "Onbekend";
 
-  const start = new Date(startDate);
+  // verwacht formaat: DD-MM-YYYY
+  const parts = startDate.split("-");
+  if (parts.length !== 3) return "Onbekend";
+
+  const day = parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1; // JS maanden beginnen bij 0
+  const year = parseInt(parts[2]);
+
+  const start = new Date(year, month, day);
   const now = new Date();
 
   const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+
+  if (isNaN(diff)) return "Onbekend";
+
   return diff + " dagen";
 }
 
