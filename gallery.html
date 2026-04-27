@@ -180,19 +180,6 @@ Promise.all([
     
       renderGallery();
     }
-let ascending = false;
-
-function sortBy(type) {
-  ascending = !ascending;
-
-  wanderers.sort((a, b) => {
-    return ascending
-      ? a[type] - b[type]
-      : b[type] - a[type];
-  });
-
-  renderGallery();
-}
 }
 }
     <div class="controls">
