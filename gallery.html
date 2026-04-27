@@ -115,17 +115,15 @@ Promise.all([
   const responses = parseData(responsesText);
   const objects = parseData(objectsText);
 
-  let html = "";
+  let wanderers = [];
 
-  objects.forEach(obj => {
-    const code = obj.c[0]?.v;
-    const name = obj.c[1]?.v || code;
-    const startDate = obj.c[3]?.v;
-    const photo = obj.c[4]?.v || "";
-
-    // 📍 entries van deze TW
-    const entries = responses.filter(r =>
-      r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+  objects.forEach(wanderers.push({
+  code,
+  name,
+  photo,
+  distance: totalDistance,
+  days: parseInt(days) || 0
+});
     );
 
     // sorteren op tijd
@@ -149,7 +147,44 @@ Promise.all([
     }
 
     totalDistance = Math.round(totalDistance);
+    function renderGallery() {
+      let html = "";
+    
+      wanderers.forEach(w => {
+        html += `
+          <div class="card" onclick="window.location.href='/object?code=${w.code}'">
+            ${w.photo ? `<img src="${w.photo}">` : ""}
+            <h3>${w.name}</h3>
+            <div class="stat">🧭 ${w.distance} km</div>
+            <div class="stat">🕒 ${w.days} dagen</div>
+            <div class="small">${w.code}</div>
+          </div>
+        `;
+      });
 
+  renderGallery();
+      
+let ascending = false;
+
+function sortBy(type) {
+  ascending = !ascending;
+
+  wanderers.sort((a, b) => {
+    return ascending
+      ? a[type] - b[type]
+      : b[type] - a[type];
+  });
+
+  renderGallery();
+}
+}
+}
+    <div class="controls">
+      <button onclick="sortBy('distance')">🧭 Afstand</button>
+      <button onclick="sortBy('days')">🕒 Leeftijd</button>
+    </div>
+
+    
     // 📅 dagen
     const days = calcDays(startDate);
 
