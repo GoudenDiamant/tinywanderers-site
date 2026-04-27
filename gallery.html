@@ -54,12 +54,18 @@ const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
 const responsesURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Formulierreacties 1`;
 const objectsURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=Objects`;
 
+const gallery = document.getElementById("gallery");
+
+let wanderers = [];
+let ascending = false;
+
+// helper
 function parseData(data) {
   const jsonString = data.match(/google\.visualization\.Query\.setResponse\((.*)\);/)[1];
   return JSON.parse(jsonString).table.rows;
 }
 
-// 🌍 afstand functie
+// 🌍 afstand
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
 
@@ -76,41 +82,63 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// 📅 dagen berekenen
+// 📅 dagen
 function calcDays(startDate) {
-  if (!startDate) return "Onbekend";
+  if (!startDate) return 0;
 
   let start;
 
-  // 📅 Google Date(...) formaat
   if (typeof startDate === "string" && startDate.includes("Date(")) {
     const parts = startDate.match(/\d+/g);
     start = new Date(parts[0], parts[1], parts[2]);
-  }
-
-  // 📅 ISO formaat (2026-04-21)
-  else if (typeof startDate === "string" && startDate.includes("-")) {
+  } else if (typeof startDate === "string" && startDate.includes("-")) {
     const parts = startDate.split("-");
     if (parts.length === 3) {
       start = new Date(parts[0], parts[1] - 1, parts[2]);
     }
-  }
-
-  // 📅 al een Date object
-  else {
+  } else {
     start = new Date(startDate);
   }
 
-  if (!start || isNaN(start)) return "Onbekend";
+  if (!start || isNaN(start)) return 0;
 
   const now = new Date();
-  const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-
-  return diff + " dagen";
+  return Math.floor((now - start) / (1000 * 60 * 60 * 24));
 }
 
-const gallery = document.getElementById("gallery");
+// 🎨 render
+function renderGallery() {
+  let html = "";
 
+  wanderers.forEach(w => {
+    html += `
+      <div class="card" onclick="window.location.href='/object?code=${w.code}'">
+        ${w.photo ? `<img src="${w.photo}">` : ""}
+        <h3>${w.name}</h3>
+        <div class="stat">🧭 ${w.distance} km</div>
+        <div class="stat">🕒 ${w.days} dagen</div>
+        <div class="small">${w.code}</div>
+      </div>
+    `;
+  });
+
+  gallery.innerHTML = html;
+}
+
+// 🔽 sorteren
+function sortBy(type) {
+  ascending = !ascending;
+
+  wanderers.sort((a, b) => {
+    return ascending
+      ? a[type] - b[type]
+      : b[type] - a[type];
+  });
+
+  renderGallery();
+}
+
+// 🚀 data laden
 Promise.all([
   fetch(responsesURL).then(r => r.text()),
   fetch(objectsURL).then(r => r.text())
@@ -120,21 +148,18 @@ Promise.all([
   const responses = parseData(responsesText);
   const objects = parseData(objectsText);
 
-  let wanderers = [];
+  objects.forEach(obj => {
+    const code = obj.c[0]?.v;
+    const name = obj.c[1]?.v || code;
+    const startDate = obj.c[3]?.v;
+    const photo = obj.c[4]?.v || "";
 
-  objects.forEach(wanderers.push({
-  code,
-  name,
-  photo,
-  distance: totalDistance,
-  days: parseInt(days) || 0
-  }));
+    const entries = responses.filter(r =>
+      r.c[1]?.v?.toString().toUpperCase().startsWith(code)
+    );
 
-
-    // sorteren op tijd
     entries.sort((a, b) => new Date(a.c[0]?.v) - new Date(b.c[0]?.v));
 
-    // 🧭 afstand berekenen
     let totalDistance = 0;
 
     for (let i = 1; i < entries.length; i++) {
@@ -152,56 +177,18 @@ Promise.all([
     }
 
     totalDistance = Math.round(totalDistance);
-    wanderers.forEach(w => {
-      html += `
-        <div class="card" onclick="window.location.href='/object?code=${w.code}'">
-          ${w.photo ? `<img src="${w.photo}">` : ""}
-          <h3>${w.name}</h3>
-          <div class="stat">🧭 ${w.distance} km</div>
-          <div class="stat">🕒 ${w.days} dagen</div>
-          <div class="small">${w.code}</div>
-        </div>
-      `;
-    });
-    
-    gallery.innerHTML = html;
-    
-    // 🔽 sorteer logica
-    let ascending = false;
-    
-    function sortBy(type) {
-      ascending = !ascending;
-    
-      wanderers.sort((a, b) => {
-        return ascending
-          ? a[type] - b[type]
-          : b[type] - a[type];
-      });
-    
-      renderGallery();
-    }
-}
-    <div class="controls">
-      <button onclick="sortBy('distance')">🧭 Afstand</button>
-      <button onclick="sortBy('days')">🕒 Leeftijd</button>
-    </div>
-
-    
-    // 📅 dagen
     const days = calcDays(startDate);
 
-    html += `
-      <div class="card" onclick="window.location.href='/object?code=${code}'">
-        ${photo ? `<img src="${photo}">` : ""}
-        <h3>${name}</h3>
-        <div class="stat">🧭 ${totalDistance} km</div>
-        <div class="stat">🕒 ${days}</div>
-        <div class="small">${code}</div>
-      </div>
-    `;
+    wanderers.push({
+      code,
+      name,
+      photo,
+      distance: totalDistance,
+      days
+    });
   });
 
-  gallery.innerHTML = html;
+  renderGallery();
 
 })
 .catch(err => {
