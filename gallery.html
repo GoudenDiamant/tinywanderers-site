@@ -42,7 +42,12 @@
       <p>Laden...</p>
     </div>
   </div>
-
+  
+<div class="controls">
+  <button onclick="sortBy('distance')">🧭 Afstand</button>
+  <button onclick="sortBy('days')">🕒 Leeftijd</button>
+</div>
+  
 <script>
 const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
 
@@ -147,23 +152,34 @@ Promise.all([
     }
 
     totalDistance = Math.round(totalDistance);
-    function renderGallery() {
-      let html = "";
+    wanderers.forEach(w => {
+      html += `
+        <div class="card" onclick="window.location.href='/object?code=${w.code}'">
+          ${w.photo ? `<img src="${w.photo}">` : ""}
+          <h3>${w.name}</h3>
+          <div class="stat">🧭 ${w.distance} km</div>
+          <div class="stat">🕒 ${w.days} dagen</div>
+          <div class="small">${w.code}</div>
+        </div>
+      `;
+    });
     
-      wanderers.forEach(w => {
-        html += `
-          <div class="card" onclick="window.location.href='/object?code=${w.code}'">
-            ${w.photo ? `<img src="${w.photo}">` : ""}
-            <h3>${w.name}</h3>
-            <div class="stat">🧭 ${w.distance} km</div>
-            <div class="stat">🕒 ${w.days} dagen</div>
-            <div class="small">${w.code}</div>
-          </div>
-        `;
+    gallery.innerHTML = html;
+    
+    // 🔽 sorteer logica
+    let ascending = false;
+    
+    function sortBy(type) {
+      ascending = !ascending;
+    
+      wanderers.sort((a, b) => {
+        return ascending
+          ? a[type] - b[type]
+          : b[type] - a[type];
       });
-
-  renderGallery();
-      
+    
+      renderGallery();
+    }
 let ascending = false;
 
 function sortBy(type) {
