@@ -40,24 +40,31 @@
   
 
   
-  <div class="container">
-    <h1>🌍 Tiny Wanderers - Galerij</h1>
-  </div>
+<div class="container">
+  <h1>🌍 Tiny Wanderers - Galerij</h1>
+
+  <!-- UITLEG CARD -->
   <div class="card">
-    <p>Hier staan alle Tiny Wanderers met een foto en enkele statestieken.
-      <br>
-    Het is mogelijk om te sorteren op afstand en leeftijd; de tijd dat de Tiny Wanderer bestaat.
-      <br>
-    Daarnaast is het ook mogelijk om op de foto te klikken. Zo ga je naar de pagina voor deze specifieke Tiny Wanderer. Daar zou je anders via de zoekfunctie kunnen komen.</p>
+    <p>
+      Hier staan alle Tiny Wanderers met een foto en enkele statistieken.
+      <br><br>
+      Je kunt sorteren op afstand en leeftijd; de tijd dat de Tiny Wanderer bestaat.
+      <br><br>
+      Klik op een kaart om naar de pagina van die specifieke Tiny Wanderer te gaan.
+    </p>
   </div>
+
+  <!-- KNOPPEN -->
   <div class="controls">
     <button onclick="sortBy('distance')">🧭 Afstand</button>
     <button onclick="sortBy('days')">🕒 Leeftijd</button>
   </div>
+
+  <!-- GALERIJ -->
   <div id="gallery" class="grid">
     <p>Laden...</p>
   </div>
-
+</div>
   
 <script>
 const sheetID = "1hOh85pwC5XPk_brdeRLonqR1YYDOEadiHbaLAdaadmw";
